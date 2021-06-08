@@ -29,8 +29,8 @@ namespace Zuul
 			outside.AddExit("south", lab);
 			outside.AddExit("west", pub);
 
-            bathroom.AddExit("up", outside);
-			outside.AddExit("down", bathroom);
+            bathroom.AddExit("up", pub);
+			pub.AddExit("down", bathroom);
 
 			theatre.AddExit("west", outside);
 
@@ -41,7 +41,7 @@ namespace Zuul
 
 			office.AddExit("west", lab);
 
-			player.currentRoom = outside;  // start game outside
+			player.CurrentRoom = outside;  // start game outside
 		}
 
 		/**
@@ -55,9 +55,17 @@ namespace Zuul
 			// execute them until the player wants to quit.
 			bool finished = false;
 			while (!finished)
-			{
-				Command command = parser.GetCommand();
-				finished = ProcessCommand(command);
+            {
+				if (player.Health > 0)
+				{
+					Command command = parser.GetCommand();
+					finished = ProcessCommand(command);
+				}
+				else
+                {
+					Console.WriteLine("You died, Better luck next time!!");
+					finished = true;
+                }
 			}
 			Console.WriteLine("Thank you for playing.");
 			Console.WriteLine("Press [Enter] to continue.");
@@ -74,13 +82,10 @@ namespace Zuul
             Console.WriteLine("Zuul is a new, incredibly boring adventure game.");
             Console.WriteLine("Type 'help' if you need help.");
             Console.WriteLine();
-            Console.WriteLine(player.currentRoom.GetLongDescription());
+            Console.WriteLine(player.CurrentRoom.GetLongDescription());
         }
 
-		private void look()
-        {
-			Console.WriteLine(player.currentRoom.getLongDiscription);
-        }
+	
 
 		/**
 		 * Given a command, process (that is: execute) the command.
@@ -107,7 +112,10 @@ namespace Zuul
 					GoRoom(command);
                     break;
 				case "look":
-					Look(command);
+					Look();
+                    break;
+				case "status":
+                    Status();
 					break;
 				case "quit":
 					wantToQuit = true;
@@ -117,7 +125,17 @@ namespace Zuul
 			return wantToQuit;
 		}
 
-		// implementations of user commands:
+        // implementations of user commands:
+
+        private void Look()
+        {
+            Console.WriteLine(player.CurrentRoom.GetLongDescription());
+        }
+
+		private void Status()
+        {
+			Console.WriteLine("You have " + player.Health + " Health left.");
+        }
 
 		/**
 		 * Print out some help information.
@@ -148,7 +166,7 @@ namespace Zuul
 			string direction = command.GetSecondWord();
 
 			// Try to go to the next room.
-			Room nextRoom = currentRoom.GetExit(direction);
+			Room nextRoom = player.CurrentRoom.GetExit(direction);
 
 			if (nextRoom == null)
 			{
@@ -156,8 +174,9 @@ namespace Zuul
 			}
 			else
 			{
-				player.currentRoom = nextRoom;
-				Console.WriteLine(player.currentRoom.GetLongDescription());
+				player.Damage(10);
+                player.CurrentRoom = nextRoom;
+				Console.WriteLine(player.CurrentRoom.GetLongDescription());
 			}
 		}
 

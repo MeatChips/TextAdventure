@@ -11,7 +11,7 @@ namespace Zuul
 		{
 			player = new Player();
             parser = new Parser();
-			CreateRooms();
+            CreateRooms();
 		}
 
 		private void CreateRooms()
@@ -115,8 +115,8 @@ namespace Zuul
 					Look();
                     break;
 				case "status":
-                    Status();
-					break;
+                    player.Status();
+                    break;
 				case "quit":
 					wantToQuit = true;
 					break;
@@ -132,10 +132,7 @@ namespace Zuul
             Console.WriteLine(player.CurrentRoom.GetLongDescription());
         }
 
-		private void Status()
-        {
-			Console.WriteLine("You have " + player.Health + " Health left.");
-        }
+
 
 		/**
 		 * Print out some help information.

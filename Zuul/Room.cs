@@ -7,7 +7,34 @@ namespace Zuul
 		private string description;
 		private Dictionary<string, Room> exits; // stores exits of this room.
 
-		private Inventory chest;
+        private Inventory chest;
+
+        private bool finishdestination;
+		public bool FinishDestination { get { return finishdestination; } set { finishdestination = value; } }
+
+		private bool locked; 
+		public bool Locked { get { return locked; } set { locked = value; } }
+
+        public bool UnlockDoor()
+        {
+            if (locked == true)
+            {
+				locked = false;	
+            }
+			
+			return true;
+        }
+		public bool LockDoor()
+        {
+            if (locked == false)
+            {
+                locked = true;
+            }
+			return true;
+        }
+
+
+
 		public Inventory Chest
         {
             get { return chest; }

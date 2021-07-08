@@ -5,7 +5,10 @@ namespace Zuul
 	public class Game
 	{
 		private Parser parser;
-		private Player player;
+        private Player player;
+
+		private bool finishGame = false;
+
 
 		public Game ()
 		{
@@ -14,35 +17,45 @@ namespace Zuul
             CreateRooms();
 		}
 
-		private void CreateRooms()
-		{
-			// create the rooms
-			Room outside = new Room("outside the main entrance of the university");
-			Room theatre = new Room("in a lecture theatre");
-			Room pub = new Room("in the campus pub");
-			Room lab = new Room("in a computing lab");
-            Room office = new Room("in the computing admin office");
-			Room bathroom = new Room("In the bathroom");
+        private void CreateRooms()
+        {
+            // create the rooms
+            Room outside = new Room("outside the main entrance of the university");
+            Room theatre = new Room("in a lecture theatre");
+            Room pub = new Room("in the campus pub");
+            Room lab = new Room("in a computing lab");
+			Room office = new Room("In the office");
+            Room bathroom = new Room("In the bathroom");
 
-			// initialise room exits
-			outside.AddExit("east", theatre);
-			outside.AddExit("south", lab);
-			outside.AddExit("west", pub);
+            // initialise room exits
+            outside.AddExit("east", theatre);
+            outside.AddExit("south", lab);
+            outside.AddExit("west", pub);
 
             bathroom.AddExit("up", pub);
-			pub.AddExit("down", bathroom);
+            pub.AddExit("down", bathroom);
 
-			theatre.AddExit("west", outside);
+            theatre.AddExit("west", outside);
 
-			pub.AddExit("east", outside);
+            pub.AddExit("east", outside);
 
-			lab.AddExit("north", outside);
-			lab.AddExit("east", office);
+            lab.AddExit("north", outside);
+            lab.AddExit("east", office);
 
-			office.AddExit("west", lab);
+            office.AddExit("west", lab);
 
-			player.CurrentRoom = outside;  // start game outside
-		}
+            player.CurrentRoom = outside;  // start game outside
+
+            //pub.Chest.Put("axe", new Item(15, "Destroy door locks with the axe."));
+            bathroom.Chest.Put("pipe", new Item(15, "Destroy door locks with the pipe"));
+            pub.Chest.Put("lab_key", new Item(10, "This key is used to open the lab door"));
+
+            lab.LockDoor();
+
+			office.FinishDestination = true;
+
+
+        }
 
 		/**
 		 *  Main play routine.  Loops until end of play.
@@ -59,7 +72,12 @@ namespace Zuul
 				if (player.Health > 0)
 				{
 					Command command = parser.GetCommand();
-					finished = ProcessCommand(command);
+                    finished = ProcessCommand(command);
+					if (player.CurrentRoom.FinishDestination)
+                    {
+                        finished = true;
+						Console.WriteLine("You've finished the game!");
+                    }
 				}
 				else
                 {
@@ -117,6 +135,15 @@ namespace Zuul
 				case "status":
                     player.Status();
                     break;
+				case "take":
+					Take(command);
+                    break;
+				case "drop":
+                    Drop(command);
+					break;
+                case "use":
+                    player.Use(command);
+					break;
 				case "quit":
 					wantToQuit = true;
 					break;
@@ -132,6 +159,21 @@ namespace Zuul
             Console.WriteLine(player.CurrentRoom.GetLongDescription());
         }
 
+        private void Take(Command command)
+        {
+            if (command.HasSecondWord())
+            {
+				player.TakeFromChest(command.GetSecondWord());
+			}
+		}
+
+		private void Drop(Command command)
+        {
+			if (command.HasSecondWord())
+            {
+				player.DropToChest(command.GetSecondWord());
+			}
+		}
 
 
 		/**
@@ -171,11 +213,15 @@ namespace Zuul
 			}
 			else
 			{
+				if (nextRoom.Locked)
+                {
+                    Console.WriteLine("WARNING: THE DOOR IS LOCKED!!!");
+					return;
+                }
 				player.Damage(10);
                 player.CurrentRoom = nextRoom;
 				Console.WriteLine(player.CurrentRoom.GetLongDescription());
 			}
 		}
-
 	}
 }

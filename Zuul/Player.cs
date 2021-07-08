@@ -50,7 +50,7 @@ namespace Zuul
         public void Status()
         {
             Console.WriteLine("You have " + health + " Health left.");
-            Console.WriteLine("You have these items in your inventory: "); ;
+            Console.WriteLine(inventory.itemCheckInventory());
         }
 
         public bool TakeFromChest(string itemName)
@@ -58,12 +58,12 @@ namespace Zuul
             Item item = CurrentRoom.Chest.Get(itemName);
             if (item == null)
             {
-                Console.WriteLine(itemName + "does not exist in the current room.");
+                Console.WriteLine(itemName + " does not exist in the current room.");
                 return false;
             }
             if (inventory.Put(itemName, item))
             {
-                Console.WriteLine("You picked up a" + itemName + "and added it to your inventory.");
+                Console.WriteLine("You picked up a " + itemName + " and added it to your inventory.");
                 return true;
             }
             Console.WriteLine("You don't have enough space in your inventory left to carry, the item: " + itemName);
@@ -71,16 +71,52 @@ namespace Zuul
             return false;
         }
 
-        public bool DropFromChest(string itemName)
+        public bool DropToChest(string itemName)
         {
             Item item = inventory.Get(itemName);
             if (item == null)
             {
                 return false;
             }
-            Console.WriteLine("You dropped a" + itemName + "on the ground.");
+            Console.WriteLine("You dropped a " + itemName + " on the ground.");
             CurrentRoom.Chest.Put(itemName, item);
             return true;
+        }
+
+        public string Use(Command command)
+        {
+            string itemName = command.GetSecondWord();
+            Item item = inventory.Get(itemName);
+
+            if (item == null)
+            {
+                Console.WriteLine("You don't have " + itemName + " in your inventory.");
+                return "";
+            }
+
+            if (itemName == "axe")
+            {
+                Console.WriteLine("You destroyed the locked door with your " + itemName);
+                return "";
+            }
+
+            if (itemName == "pipe")
+            {
+                Damage(20);
+                Console.WriteLine("The " + itemName + " broke in half and banged against your head and you lost 20 health.");
+                return "";
+            }
+
+            if(itemName == "lab_key")
+            {
+                string exitstring = command.GetThirdWord();
+                Room next = CurrentRoom.GetExit(exitstring);
+                next.UnlockDoor();
+                Console.WriteLine("You used your " + itemName + " and opening the lab door");
+                return "";
+            }
+            
+            return "";
         }
     }
 }
